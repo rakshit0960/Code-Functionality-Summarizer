@@ -7,23 +7,35 @@ from agents.writer_agent import writer_agent
 
 def selector_func(messages):
     """
-    Simple selector function that chooses the appropriate agent based on keywords in the last message.
-    Returns the name of the agent that should respond next.
+    Enhanced selector function that chooses the appropriate agent based on:
+    1. Workflow keywords from previous agent responses
+    2. Keywords in the user's initial message
+    3. Default routing logic
     """
     if not messages:
-        return "ParserAgent"  # Default to parser agent
+        return "ParserAgent"  # Default to parser agent to start
         
     last_message = str(messages[-1]).lower()
     
-    # Check for keywords to determine which agent should respond
-    if any(keyword in last_message for keyword in ["summary", "summarize", "explain", "understand", "what does"]):
+    # Check for workflow keywords from agents (highest priority)
+    if "workflow: save to file" in last_message or "workflow: write" in last_message:
+        return "WriterAgent"
+    elif "workflow: summarize code" in last_message or "workflow: summarize" in last_message:
+        return "CodeSummaryAgent"
+    elif "workflow: parse" in last_message or "workflow: analyze further" in last_message:
+        return "ParserAgent"
+    elif "workflow: task complete" in last_message:
+        return None  # End the conversation
+    
+    # Check for user keywords (medium priority)
+    elif any(keyword in last_message for keyword in ["summary", "summarize", "explain", "understand", "what does"]):
         return "CodeSummaryAgent"
     elif any(keyword in last_message for keyword in ["extract", "parse", "ast", "definitions", "analyze"]):
         return "ParserAgent"
     elif any(keyword in last_message for keyword in ["write", "create", "save"]):
         return "WriterAgent"
     else:
-        # Default to parser agent for general code analysis
+        # Default logic - start with parsing for code analysis
         return "ParserAgent"
 
 # Create the selector group chat

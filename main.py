@@ -1,24 +1,25 @@
 import asyncio
 import os
+from teams.round_robin_team import round_robin_team
 from teams.selector_group_chat import selector_team
+from autogen_agentchat.ui import Console
 
 
 async def main():
     """
-    Summarize a test.py Python file using the selector group chat.
-    The selector will automatically route this to the CodeSummaryAgent.
+    Summarize a test.py Python file using the enhanced selector group chat.
+    The workflow will be: Parse -> Summarize -> Save, guided by keyword hints.
     """
     
     # Check if test.py exists
     test_file_path = "test.py"
     
-    
     with open(test_file_path, 'r', encoding='utf-8') as file:
         file_content = file.read()
     
 
-    # Create the summarization task
-    task = f"""Please summarize this Python file and explain what it does, and save the summary to summary.md:
+    # Create the analysis task - start with parsing to analyze ALL code components
+    task = f"""Please analyze this Python file completely. Extract and analyze ALL classes and functions, then provide a comprehensive summary covering every component, and save the final summary to summer.md:
 
 File: {test_file_path}
 Content:
@@ -26,24 +27,18 @@ Content:
 {file_content}
 ```
 
-Provide a clear summary including:
-1. Main purpose of the code
-2. Key functions/classes and their roles
-3. Overall structure and logic flow
+Requirements:
+1. parse the code and extract all classes and functions
+2. Analyze ALL classes
+3. Analyze ALL functions including the main() function  
+4. Provide detailed explanations for each component
+5. Save a comprehensive summary covering everything
 """
     
-    # Send the task to the selector team and stream the response
-    # The "summarize" keyword will route this to CodeSummaryAgent
-    print("🔄 Streaming response...\n")
+    await Console(round_robin_team.run_stream(task=task), output_stats=True)
     
-    async for message in selector_team.run_stream(task=task):
-        # Print each message as it comes in
-        print(f"📝 {message}")
-        print("-" * 40)
-    
-    print("\n✅ Summary complete!")
+    print("✅ Analysis complete!")
 
 
 if __name__ == "__main__":
-    print("Starting Python File Summarizer...")
     asyncio.run(main())

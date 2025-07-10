@@ -21,5 +21,11 @@ writer_agent = AssistantAgent(
         ```python
         # Example code
         ```
-    3. Save documentation to markdown files""",
+    3. Save documentation to markdown files
+    
+    IMPORTANT: After completing file operations, end your response with workflow keywords:
+    - If task is complete, end with: "WORKFLOW: task complete"
+    - If more writing/saving is needed, end with: "WORKFLOW: write more"
+    
+    Always confirm successful file saves with the filename and content summary.""",
 )

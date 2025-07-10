@@ -39,12 +39,55 @@ class DataProcessor:
             return False
 
 
+class DataValidator:
+    def __init__(self):
+        self.validation_rules = []
+        
+    def add_rule(self, rule_func):
+        """Adds a validation rule function"""
+        self.validation_rules.append(rule_func)
+        
+    def validate(self, data):
+        """Validates data against all rules"""
+        results = []
+        for rule in self.validation_rules:
+            results.append(rule(data))
+        return all(results)
+
+
+class DataTransformer:
+    @staticmethod
+    def to_uppercase(data):
+        """Converts all strings in data to uppercase"""
+        return [str(item).upper() for item in data]
+        
+    @staticmethod
+    def remove_duplicates(data):
+        """Removes duplicate entries from data"""
+        return list(set(data))
+        
+    @staticmethod
+    def sort_alphabetically(data):
+        """Sorts data alphabetically"""
+        return sorted(data)
+
+
 def main():
     # Example usage
     processor = DataProcessor("input.txt")
+    validator = DataValidator()
+    transformer = DataTransformer()
+    
+    # Add validation rules
+    validator.add_rule(lambda x: len(x) > 0)  # Check if data is not empty
+    
     if processor.load_data():
-        processor.save_results("output.txt")
-        print("Processing complete!")
+        data = processor.data
+        if validator.validate(data):
+            processor.save_results("output.txt")
+            print("Processing complete!")
+        else:
+            print("Data validation failed")
     else:
         print("Failed to process data")
 
